@@ -18,7 +18,7 @@
 	export default {
 		data() {
 			return {
-				keyWord: '斗破苍穹',
+				keyWord: '',
 				searchResult: []
 			};
 		},
@@ -26,7 +26,7 @@
 		},
 		onShow() {
 
-			this.getSearchList()
+			// this.getSearchList()
 		},
 		methods: {
 			toRead(novelId) {
@@ -71,6 +71,7 @@
 		}
 		.record {
 			line-height: 50rpx;
+			margin-bottom: 20rpx;
 		}
 	}
 </style>

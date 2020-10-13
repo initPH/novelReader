@@ -1,0 +1,47 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/home/index",
+			"style": {
+				"navigationBarTitleText": "首页"
+			}
+		}, {
+			"path": "pages/search/index",
+			"style": {
+				"navigationBarTitleText": "搜索"
+			}
+		}, {
+			"path": "pages/detail/index",
+			"style": {
+				"navigationBarTitleText": "章节列表"
+			}
+		}, {
+			"path": "pages/detail/chapterDetail",
+			"style": {
+				"navigationBarTitleText": "章节详情"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
+		"list": [{
+			"pagePath": "pages/home/index",
+			"text": "首页"
+		}, {
+			"pagePath": "pages/search/index",
+			"text": "搜索"
+		}]
+	},
+	"condition": {
+		"current": 0,
+		"list": [{
+			"name": "test",
+			"path": "pages/detail/chapterDetail" //启动页面，必选
+		}]
+	}
+}

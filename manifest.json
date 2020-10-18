@@ -1,5 +1,5 @@
 {
-    "name" : "垃圾阅读器",
+    "name" : "ph小说阅读器",
     "appid" : "__UNI__878FDD6",
     "description" : "",
     "versionName" : "1.0.0",
@@ -23,7 +23,6 @@
             /* android打包配置 */
             "android" : {
                 "permissions" : [
-                    "<uses-permission android:name=\"android.permission.INSTALL_LOCATION_PROVIDER\"/>"
                 ],
                 "autoSdkPermissions" : false
             },

@@ -5,29 +5,44 @@
 			<view class="read-historys-title">
 				阅读历史
 			</view>
-			<view class="read-history" v-for="(history, index) in historyList" :key="index">
-				<view class="read-history-pic">
-					<image class="book-pic"  :src="`http://www.biquge.info/files/article/image/${history.novelId.split('_')[0]}/${history.novelId.split('_')[1]}/${history.novelId.split('_')[1]}s.jpg`" mode=""></image>
-				</view>
-				<view class="read-history-detail">
-					<view class="">
-						{{ history.booktitle }}
+			<uni-swipe-action>
+				<uni-swipe-action-item v-for="(history, index) in historyList">
+					<template v-slot:right>
+						<view class="slide-delete" @click="deleteHistory(index)">删除</view>
+					</template>
+					<view class="read-history" :key="index">
+
+						<view class="read-history-pic">
+							<image class="book-pic" :src="`http://www.biquge.info/files/article/image/${history.novelId.split('_')[0]}/${history.novelId.split('_')[1]}/${history.novelId.split('_')[1]}s.jpg`"
+							 mode=""></image>
+						</view>
+						<view class="read-history-detail">
+							<view class="">
+								{{ history.booktitle }}
+							</view>
+							<view class="">
+								{{ history.readtitle }}
+							</view>
+							<view class="">
+								{{ history.updateTime || '-' }}
+							</view>
+							<button @click="containueRead(history)" type="primary" class="continue-read">继续阅读</button>
+						</view>
 					</view>
-					<view class="">
-						{{ history.readtitle }}
-					</view>
-					<view class="">
-						{{ history.updateTime || '-' }}
-					</view>
-					<button @click="containueRead(history)" type="primary" class="continue-read">继续阅读</button>
-				</view>
-			</view>
+				</uni-swipe-action-item>
+			</uni-swipe-action>
 		</view>
 	</view>
 </template>
 
 <script>
+	import uniSwipeAction from '@/components/uni-swipe-action/uni-swipe-action.vue'
+	import uniSwipeActionItem from '@/components/uni-swipe-action-item/uni-swipe-action-item.vue'
 	export default {
+		components: {
+			uniSwipeAction,
+			uniSwipeActionItem
+		},
 		data() {
 			return {
 				historyList: []
@@ -37,6 +52,17 @@
 			this.historyList = uni.getStorageSync('historyList') || []
 		},
 		methods: {
+			deleteHistory(index) {
+				uni.showModal({
+					title: '确定删除？',
+					success: (res) => {
+						if (res.confirm) {
+							this.historyList.splice(index, 1)
+							uni.setStorageSync('historyList', this.historyList)
+						}
+					}
+				})
+			},
 			containueRead(history) {
 				uni.navigateTo({
 					url: `/pages/detail/chapterDetail?novelId=${history.novelId}&chapterId=${history.chapterId}`
@@ -57,7 +83,15 @@
 				font-size: 40rpx;
 				border-bottom: 2rpx dashed #eee;
 			}
-
+			.slide-delete {
+				width: 150rpx;
+				background: #f20000;
+				margin: 20rpx 0;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				color: #fff;
+			}
 			.read-history {
 				margin: 20rpx;
 				padding: 20rpx;
@@ -65,20 +99,23 @@
 				// line-height: 200rpx;
 				box-shadow: 0rpx 0rpx 20rpx #aaa;
 				display: flex;
-				
+
 				&-pic {
 					width: 250rpx;
+
 					.book-pic {
 						width: 250rpx;
 						height: 100%;
 					}
 				}
+
 				&-detail {
 					padding: 0 20rpx;
 					display: flex;
 					flex-wrap: wrap;
 					align-content: space-around;
 				}
+
 				.continue-read {
 					line-height: 80rpx;
 					width: 240rpx;

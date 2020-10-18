@@ -11,6 +11,11 @@
 				"navigationBarTitleText": "搜索"
 			}
 		}, {
+			"path": "pages/search/searchResult",
+			"style": {
+				"navigationBarTitleText": "搜索结果"
+			}
+		}, {
 			"path": "pages/detail/index",
 			"style": {
 				"navigationBarTitleText": "章节列表"
@@ -19,7 +24,16 @@
 			"path": "pages/detail/chapterDetail",
 			"style": {
 				"navigationBarTitleText": "章节详情",
-				"enablePullDownRefresh": true
+				"enablePullDownRefresh": true,
+				"app-plus": {
+					"titleNView": {
+						"buttons": [{
+							"text": "目录",
+							"fontSize": "36rpx",
+							"width": "120rpx"
+						}]
+					}
+				}
 			}
 		}
 	],
@@ -30,7 +44,7 @@
 		"backgroundColor": "#F8F8F8"
 	},
 	"tabBar": {
-		"selectedColor":"#DD524D",
+		"selectedColor": "#DD524D",
 		"list": [{
 			"pagePath": "pages/home/index",
 			"text": "首页",

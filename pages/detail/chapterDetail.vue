@@ -1,24 +1,76 @@
 <template>
-	<view class="chapter-detail">
-		<!-- <button type="default" @click="readClick">开始阅读</button> -->
-		<!-- <audio src="http://tsn.baidu.com/text2audio?tex=hahaha哈哈彭浩&tok=24.1c40f2229f357978894c1d3cfa5c795b.2592000.1605194692.282335-22816144&cuid=sjhdgdgas1d21as2d1as21d&ctp=1&lan=zh&spd=5&pit=5&vol=5&per=0"controls></audio> -->
-		<view class="chapter-content" v-html="content">
+	<view :style="`backgroundColor: ${bgColors[bgColorIndex].color}`" class="chapter-detail">
+		<!-- 点击显示菜单 -->
+		<view class="menu-area" @click="showMenu">
 		</view>
-		<button type="primary" @click="nextClick" v-if="!isLastChapter">下一章</button>
-		<button type="primary" @click="preClick" v-if="!isFirstChapter">上一章</button>
+		<view class="chapter-content" :style="`fontSize: ${fontSize}rpx`" v-html="content">
+		</view>
+		<view class="chapter-bottom">
+			<view @click="preClick" v-if="!isFirstChapter">上一章</view>
+			<view @click="nextClick" v-if="!isLastChapter">下一章</view>
+		</view>
+		<uni-drawer @change="drawerChange" ref="catelogDrawer" mode="right" :width="250">
+			<scroll-view :style="`backgroundColor: ${bgColors[bgColorIndex].color};fontSize: ${fontSize}rpx`" scroll-y="" class="catelog-views">
+				<view class="uni-title" v-for="(category, index) in catelogList" :key="index" @click="catelogClick(category)">{{ category.name }}</view>
+			</scroll-view>
+		</uni-drawer>
+		<uni-popup ref="popup" type="bottom">
+			<view class="bottom-setting-area">
+				<view class="font-setting">
+					<view class="font-setting-title">
+						字体大小
+					</view>
+					<view class="font-setting-buttons">
+						<uni-number-box :min="10" :max="100" :value="fontSize" @change="fontSizeChange"></uni-number-box>
+						<view class="font-setting-button" @click="fontSizeChange(10)">
+							最小
+						</view>
+						<view class="font-setting-button" @click="fontSizeChange(40)">
+							默认
+						</view>
+						<view class="font-setting-button" @click="fontSizeChange(100)">
+							最大
+						</view>
+					</view>
+				</view>
+				<view class="font-setting">
+					<view class="font-setting-title">
+						背景颜色
+					</view>
+					<view class="bgcolor-buttons">
+						<view v-for="(bgcolor, index) in bgColors" class="bgcolor-demo bgcolor1" :class="{'active': bgColorIndex == index}" :style="`backgroundColor: ${bgcolor.color}`"
+						 @click="bgColorChange(index)" :key="index">
+							{{ bgcolor.name }}
+						</view>
+
+					</view>
+				</view>
+			</view>
+		</uni-popup>
 	</view>
 </template>
 
 <script>
+	import uniNumberBox from "@/components/uni-number-box/uni-number-box.vue"
+	import uniDrawer from "@/components/uni-drawer/uni-drawer.vue"
+	import uniPopup from '@/components/uni-popup/uni-popup.vue'
 	import {
-		getChapterDetail
+		getChapterDetail,
+		getChapter
 	} from '@/api/index.js'
 	import {
 		formatDate
 	} from '@/util.js'
 	export default {
+		components: {
+			uniDrawer,
+			uniPopup,
+			uniNumberBox
+		},
 		data() {
 			return {
+				// 抽屉打开了吗
+				isDrawerOpen: false,
 				novelId: '',
 				chapterId: '',
 				content: "",
@@ -27,10 +79,39 @@
 				// 下一章id
 				nextChapterId: "",
 				// 是不是第一章  是的话就不显示上一章
-				isFirstChapter: false,
+				isFirstChapter: true,
 				// 是否最后一章
-				isLastChapter: false,
-				isReading: false,
+				isLastChapter: true,
+				// 目录
+				catelogList: [],
+				fontSize: uni.getStorageSync('fontSize') || 40,
+				bgColorIndex: uni.getStorageSync('bgColorIndex') || 0,
+				bgColors: [{
+					color: 'rgb(247,247,247)',
+					name: '磨砂白'
+				}, {
+					color: 'rgb(249,241,230)',
+					name: '麻布色'
+				}, {
+					color: 'rgb(208,229,212)',
+					name: '护眼绿'
+				}, {
+					color: 'rgb(255,227,226)',
+					name: '贵妃粉'
+				}, {
+					color: 'rgb(200,176,128)',
+					name: '羊皮纸'
+				}]
+			}
+		},
+
+		// 右上角目录被点击时
+		onNavigationBarButtonTap(button) {
+			// 如果当前是打开状态 就关闭
+			if (this.isDrawerOpen) {
+				this.$refs['catelogDrawer'].close()
+			} else {
+				this.$refs['catelogDrawer'].open()
 			}
 		},
 		onPullDownRefresh() {
@@ -40,53 +121,43 @@
 			this.novelId = option.novelId
 			this.chapterId = option.chapterId
 			this.getChapterDetail()
+			this.getCatelogList()
 		},
 		methods: {
-			readClick() {
-				this.isReading = true
-				uni.request({
-					url: "https://openapi.baidu.com/oauth/2.0/token",
-					data: {
-						grant_type: "client_credentials",
-						client_id: 'G3LquLUs6y0XG008Xkvyby9U',
-						client_secret: "5sK30XAGzOb3FhxqyuBRDAAIlXOGdGUA"
-					},
-					success: (res) => {
-						let token = res.data.access_token
-						uni.request({
-							url: 'http://tsn.baidu.com/text2audio',
-							method: "post",
-							data: {
-								tex: "pppp哈哈",
-								tok: token,
-								cuid: 'sjhdgdgas1d21as2d1as21d',
-								ctp: 1,
-								lan: 'zh',
-								spd: 5,
-								pit: 5,
-								vol: 5,
-								per: 0
-							},
-							header: {
-								"content-type": "application/x-www-form-urlencoded"
-							},
-							success: (res) => {
-								let blob = new Blob([res.data], {type: "audio/mp3"})
-								let url = URL.createObjectURL(blob)
-								const innerAudioContext = uni.createInnerAudioContext();
-								innerAudioContext.autoplay = true;
-								innerAudioContext.src = url;
-								innerAudioContext.onPlay(() => {
-									console.log('开始播放');
-								});
-								innerAudioContext.onError((aaa) => {
-									console.log(aaa)
-								});
-							}
-						})
-					}
+			bgColorChange(colorIndex) {
+				this.bgColorIndex = colorIndex
+				uni.setStorageSync('bgColorIndex', colorIndex)
+			},
+			fontSizeChange(fontSize) {
+				this.fontSize = fontSize
+				uni.setStorageSync('fontSize', fontSize)
+			},
+			showMenu() {
+				this.$refs['popup'].open()
+			},
+			drawerChange(isOpen) {
+				this.isDrawerOpen = isOpen
+			},
+			getCatelogList() {
+				// 拿目录
+				getChapter(this.novelId).then(res => {
+					let clearString = res.replace(/[\r\n]/g, "")
+					// 获取所有章节的div
+					let chapterList = clearString.match(/<div id="list".+?<\/div>/)[0]
+					// 获取单个div
+					let ddList = chapterList.match(/<dd.+?>(.+?)<\/dd>/g)
+					this.catelogList = ddList.map(dd => {
+						return {
+							name: dd.match(/title="(.+?)">/)[1],
+							id: dd.match(/href="(.+?)"/)[1]
+						}
+					})
 				})
-				// 5L2g5aW95ZGA
+			},
+			catelogClick(category) {
+				this.chapterId = category.id
+				this.$refs['catelogDrawer'].close()
+				this.getChapterDetail()
 			},
 			preClick() {
 				this.chapterId = this.preChapterId
@@ -111,6 +182,9 @@
 					let booktitle = cleanStr.match(/var booktitle = "(.+?)";/)[1]
 					// 章节名字
 					let readtitle = cleanStr.match(/var readtitle = "(.+?)";/)[1]
+					uni.setNavigationBarTitle({
+						title: readtitle
+					})
 					// 保存阅读记录
 					this.saveReadLog(booktitle, readtitle)
 
@@ -133,6 +207,11 @@
 					uni.pageScrollTo({
 						scrollTop: 0,
 						duration: 0
+					})
+				}).catch(e => {
+					uni.showToast({
+						title: '加载失败，请刷新',
+						icon: 'none'
 					})
 				})
 			},
@@ -170,9 +249,80 @@
 <style lang="less">
 	.chapter-detail {
 		padding: 0 20rpx 100rpx;
+		min-height: 100vh;
+
+		.menu-area {
+			position: fixed;
+			width: 80%;
+			height: 80%;
+			margin-left: 10%;
+			margin-top: 10%;
+			background: transparent;
+		}
 
 		.chapter-content {
 			margin-bottom: 100rpx;
+		}
+
+		.chapter-bottom {
+			padding: 20rpx;
+			display: flex;
+			justify-content: space-between;
+			color: blue;
+		}
+
+		.catelog-views {
+			height: 100%;
+			padding: 0 20rpx;
+			font-size: 36rpx;
+		}
+
+		.bottom-setting-area {
+			background: #fff;
+			height: 400rpx;
+			padding: 20rpx;
+
+			.font-setting {
+				&-title {
+					border-bottom: 1px solid #eee;
+					height: 60rpx;
+					margin-bottom: 20rpx;
+				}
+
+				&-buttons {
+					display: flex;
+					justify-content: space-around;
+
+					.font-setting-button {
+						width: 80rpx;
+						height: 80rpx;
+						font-size: 30rpx;
+						background: #eee;
+						border-radius: 50%;
+						text-align: center;
+						line-height: 80rpx;
+					}
+				}
+			}
+
+			.bgcolor-buttons {
+				display: flex;
+				justify-content: space-around;
+
+				.bgcolor-demo {
+					box-sizing: border-box;
+					width: 100rpx;
+					height: 100rpx;
+					font-size: 30rpx;
+					background: #eee;
+					border-radius: 50%;
+					text-align: center;
+					line-height: 100rpx;
+					&.active {
+						border: 2rpx solid #222;
+					}
+				}
+			}
 		}
 	}
 </style>

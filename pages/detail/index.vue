@@ -2,7 +2,6 @@
 	<view class="chapters">
 		<view class="chapter" v-for="(chapter, index) in chapters" :key="index" @click="toRead(chapter.id)">
 			{{ chapter.name }}
-			({{ chapter.id }})
 		</view>
 	</view>
 </template>
@@ -15,6 +14,12 @@
 		onLoad(option) {
 			this.novelId = option.novelId
 			this.getChapters()
+			if (option.novelName) {
+				uni.setNavigationBarTitle({
+					title: option.novelName
+				})
+			}
+
 		},
 		data() {
 			return {

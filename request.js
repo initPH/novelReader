@@ -1,24 +1,40 @@
+let loadCount = 0
+const showLoading = () => {
+	if (loadCount == 0) {
+		uni.showLoading({
+			title: '加载中...'
+		})
+	}
+	loadCount++
+}
+const hideLoading = () => {
+	loadCount--
+	if (loadCount == 0) {
+		uni.hideLoading()
+	}
+}
+
 export default ({
 	url,
 	data,
 	method = 'get'
 }) => {
-	uni.showLoading({
-	})
+	showLoading()
 	return new Promise((resolve, reject) => {
 		uni.request({
 			url,
 			data,
 			method,
-			timeout: 10000,
+			timeout: 500,
 			success(res) {
 				resolve(res.data)
 			},
-			fail(res) {
-				reject(res)
+			fail(e) {
+				console.log(e)
+				reject(e)
 			},
 			complete() {
-				uni.hideLoading()
+				hideLoading()
 			}
 		})
 	})

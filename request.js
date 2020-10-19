@@ -25,7 +25,7 @@ export default ({
 			url,
 			data,
 			method,
-			timeout: 500,
+			timeout: 20000,
 			success(res) {
 				resolve(res.data)
 			},

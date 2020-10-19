@@ -1,6 +1,7 @@
 <template>
 	<view :style="`backgroundColor: ${bgColors[bgColorIndex].color}`" class="chapter-detail">
 		<!-- 点击显示菜单 -->
+
 		<view class="menu-area" @click="showMenu">
 		</view>
 
@@ -43,9 +44,23 @@
 						 :style="`backgroundColor: ${bgcolor.color}`" @click="bgColorChange(index)" :key="index">
 							{{ bgcolor.name }}
 						</view>
-
 					</view>
 				</view>
+				<!-- <view class="font-setting">
+					<view class="font-setting-title">
+						阅读设置
+					</view>
+					{{ readingState }}
+					<button type="default" v-if="readingState == 'notStart'" @click="startPlay">
+						开始阅读
+					</button>
+					<button v-else-if="readingState = 'pause'" type="default" @click="continuePlay">
+						继续阅读
+					</button>
+					<button v-else-if="readingState = 'reading'" type="primary" @click="pausePlay">
+						阅读中...
+					</button>
+				</view> -->
 			</view>
 		</uni-popup>
 	</view>
@@ -74,8 +89,14 @@
 			uniPopup,
 			uniNumberBox
 		},
+		onHide() {
+			if (this.reading) {
+				this.play.stopSpeaking()
+			}
+		},
 		data() {
 			return {
+				readingState: 'notStart',
 				// 抽屉打开了吗
 				isDrawerOpen: false,
 				novelId: '',
@@ -106,7 +127,8 @@
 				}, {
 					color: 'rgb(200,176,128)',
 					name: '羊皮纸'
-				}]
+				}],
+				play: ""
 			}
 		},
 		computed: {
@@ -135,6 +157,16 @@
 			}, 3000)
 		},
 		methods: {
+			changeEnCode(str) {
+				let res = []
+				for (let i = 0; i < str.length; i++) {
+					// 这个不是正常的encodeUnicode 颠倒了大小端的位置
+					res[i] = ("00" + str.charCodeAt(i).toString(16)).slice(-2) + ("00" + str.charCodeAt(i).toString(16)).slice(-4, -2)
+				}
+				let strCode = "\\u" + res.join("\\u")
+				strCode = strCode.replace(/\\/g, "%")
+				return unescape(strCode)
+			},
 			bgColorChange(colorIndex) {
 				this.bgColorIndex = colorIndex
 				uni.setStorageSync('bgColorIndex', colorIndex)
@@ -233,7 +265,7 @@
 						this.nextChapterId = cleanStr.match(/var nextpage="(.+?)"/)[1]
 					}
 					this.saveReadLog(booktitle, readtitle)
-					
+
 					// 滚动到顶部
 					uni.pageScrollTo({
 						scrollTop: 0,
@@ -276,7 +308,59 @@
 					})
 				}
 				uni.setStorageSync('historyList', historyList)
-			}
+			},
+			// 设置阅播放器
+			// startPlay() {
+			// 	let $ = cheerio.load(this.content, {
+			// 		_useHtmlParser2: true
+			// 	});
+			// 	const cleanText = $("#content").text()
+			// 	// 播放器还没初始化   就初始化播放器
+			// 	var main = plus.android.runtimeMainActivity();
+
+			// 	var SpeechUtility = plus.android.importClass('com.iflytek.cloud.SpeechUtility');
+
+			// 	SpeechUtility.createUtility(main, "appid=53feacdd");
+
+			// 	var SynthesizerPlayer = plus.android.importClass('com.iflytek.cloud.SpeechSynthesizer');
+
+			// 	this.play = SynthesizerPlayer.createSynthesizer(main, null);
+			// 	// 还没开始读
+			// 	var receiver;
+			// 	receiver = plus.android.implements('com.iflytek.cloud.SynthesizerListener', {
+			// 		onEvent: function(eventType, arg1, arg2, obj) {
+			// 			console.log("onEvent");
+			// 		},
+			// 		onSpeakBegin: function() {
+			// 			console.log("开始阅读");
+			// 		},
+			// 		onSpeakPaused: function() {
+			// 			console.log(" 暂停播放 ");
+			// 		},
+			// 		onSpeakResumed: function() {
+			// 			console.log("继续播放");
+			// 		},
+			// 		// onBufferProgress: function(percent, beginPos, endPos, info) {
+			// 		// 	console.log("合成进度" + percent);
+			// 		// },
+			// 		// onSpeakProgress: function(percent, beginPos, endPos) {
+			// 		// 	console.log("播放进度" + percent);
+			// 		// },
+			// 		onCompleted: function(error) {
+			// 			console.log("播放完毕");
+			// 		}
+			// 	});
+			// 	this.readingState = 'reading'
+			// 	// this.play.startSpeaking(this.changeEnCode(cleanText), receiver);
+			// },
+			// continuePlay() {
+			// 	this.readingState = 'reading'
+			// 	this.play.resumeSpeaking();
+			// },
+			// pausePlay() {
+			// 	this.readingState = 'pause'
+			// 	this.play.pauseSpeaking()
+			// }
 		}
 	}
 </script>
@@ -314,8 +398,9 @@
 
 		.bottom-setting-area {
 			background: #fff;
-			height: 400rpx;
+			// height: 600rpx;
 			padding: 20rpx;
+			padding-bottom: 50rpx;
 
 			.font-setting {
 				&-title {

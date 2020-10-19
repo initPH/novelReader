@@ -51,14 +51,14 @@
 						$('.grid tr td:nth-child(1) a').each((key, value) => {
 							this.searchResult.push({
 								novelName: value.children[0].data,
-								novelId: value.attribs.href
+								novelId: value.attribs.href.split('/')[1]
 							})
 						})
 					} else if(this.source == '笔趣宝') {
 						$('a.result-game-item-title-link').each((key, value) => {
 							this.searchResult.push({
 								novelName: value.attribs.title,
-								novelId: value.attribs.href
+								novelId: value.attribs.href.split('/')[2]
 							})
 						})
 					}

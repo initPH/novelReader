@@ -13,11 +13,9 @@
 					<view class="read-history" :key="index">
 
 						<view class="read-history-pic">
-							<image v-if="history.source == '笔趣阁'" class="book-pic" :src="`http://www.biquge.info/files/article/image/${history.novelId.split('_')[0]}/${history.novelId.split('_')[1]}/${history.novelId.split('_')[1]}s.jpg`"
-							 ></image>
-							<image v-else-if="history.source == '笔趣宝'" class="book-pic" 
-							:src="`https://www.biqubao.com/cover/${history.novelId.split('/')[2].substr(0,2)}/${history.novelId.split('/')[2]}/${history.novelId.split('/')[2]}s.jpg`"
-							 ></image>
+							<!-- {{ history }} -->
+							<image v-if="history.source == '笔趣阁'" class="book-pic" :src="`http://www.biquge.info/files/article/image/${history.novelId.split('_')[0]}/${history.novelId.split('_')[1]}/${history.novelId.split('_')[1]}s.jpg`"></image>
+							<image v-else-if="history.source == '笔趣宝'" class="book-pic" :src="`https://www.biqubao.com/cover/${history.novelId.length == 3 ? 0 :history.novelId.substr(0,2)}/${history.novelId}/${history.novelId}s.jpg`"></image>
 						</view>
 						<view class="read-history-detail">
 							<view class="">
@@ -41,7 +39,9 @@
 <script>
 	import uniSwipeAction from '@/components/uni-swipe-action/uni-swipe-action.vue'
 	import uniSwipeActionItem from '@/components/uni-swipe-action-item/uni-swipe-action-item.vue'
-	import{ mapMutations }from 'vuex'
+	import {
+		mapMutations
+	} from 'vuex'
 	export default {
 		components: {
 			uniSwipeAction,
@@ -121,6 +121,7 @@
 					padding: 0 20rpx;
 					display: flex;
 					flex-wrap: wrap;
+					// flex-grow: 0;
 					align-content: space-around;
 				}
 

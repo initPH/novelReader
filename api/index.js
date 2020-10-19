@@ -27,9 +27,9 @@ export const getChapter = (data = {}) => {
 	let postData = {}
 	let url = ""
 	if (data.source == '笔趣阁') {
-		url = `http://www.biquge.info${data.novelId}`
+		url = `http://www.biquge.info/${data.novelId}/`
 	} else if (data.source == '笔趣宝') {
-		url = `https://www.biqubao.com${data.novelId}`
+		url = `https://www.biqubao.com/book/${data.novelId}/`
 	}
 	return request({
 		url,
@@ -43,7 +43,7 @@ export const getChapterDetail = (data = {}) => {
 	let postData = {}
 	let url = ""
 	if (data.source == '笔趣阁') {
-		url = `http://www.biquge.info${data.novelId}${data.chapterId}`
+		url = `http://www.biquge.info/${data.novelId}/${data.chapterId}`
 	} else if (data.source == '笔趣宝') {
 		url = `https://www.biqubao.com${data.chapterId}`
 	}

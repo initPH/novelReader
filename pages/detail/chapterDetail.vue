@@ -3,7 +3,8 @@
 		<!-- 点击显示菜单 -->
 		<view class="menu-area" @click="showMenu">
 		</view>
-		<view class="chapter-content" :style="`fontSize: ${fontSize}rpx`" v-html="content">
+		
+		<view v-if="content" class="chapter-content" :style="`fontSize: ${fontSize}rpx`" v-html="content">
 		</view>
 		<view class="chapter-bottom">
 			<view @click="preClick" v-if="!isFirstChapter">上一章</view>
@@ -38,8 +39,8 @@
 						背景颜色
 					</view>
 					<view class="bgcolor-buttons">
-						<view v-for="(bgcolor, index) in bgColors" class="bgcolor-demo bgcolor1" :class="{'active': bgColorIndex == index}" :style="`backgroundColor: ${bgcolor.color}`"
-						 @click="bgColorChange(index)" :key="index">
+						<view v-for="(bgcolor, index) in bgColors" class="bgcolor-demo bgcolor1" :class="{'active': bgColorIndex == index}"
+						 :style="`backgroundColor: ${bgcolor.color}`" @click="bgColorChange(index)" :key="index">
 							{{ bgcolor.name }}
 						</view>
 
@@ -121,7 +122,11 @@
 			this.novelId = option.novelId
 			this.chapterId = option.chapterId
 			this.getChapterDetail()
-			this.getCatelogList()
+			
+			// 访问频率控制 刚刚才访问了内容  过两秒再请求
+			setTimeout(() => {
+				this.getCatelogList()
+			}, 3000)
 		},
 		methods: {
 			bgColorChange(colorIndex) {
@@ -318,6 +323,7 @@
 					border-radius: 50%;
 					text-align: center;
 					line-height: 100rpx;
+
 					&.active {
 						border: 2rpx solid #222;
 					}

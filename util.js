@@ -8,9 +8,7 @@ export const formatDate =  function(value) {
 	var minutes = date.getMinutes();
 	if (minutes < 10)
 		minutes = "0" + minutes;
-	console.log(1231)
 	var seconds = date.getSeconds().toString().padStart(2, '0')
-	console.log(seconds)
 	var time = date.getFullYear() + "-" + month + "-" + date.getDate() +
 		" " + hours + ":" + minutes + ":" + seconds;
 	return time;

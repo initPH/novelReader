@@ -13,8 +13,11 @@
 					<view class="read-history" :key="index">
 
 						<view class="read-history-pic">
-							<image class="book-pic" :src="`http://www.biquge.info/files/article/image/${history.novelId.split('_')[0]}/${history.novelId.split('_')[1]}/${history.novelId.split('_')[1]}s.jpg`"
-							 mode=""></image>
+							<image v-if="history.source == '笔趣阁'" class="book-pic" :src="`http://www.biquge.info/files/article/image/${history.novelId.split('_')[0]}/${history.novelId.split('_')[1]}/${history.novelId.split('_')[1]}s.jpg`"
+							 ></image>
+							<image v-else-if="history.source == '笔趣宝'" class="book-pic" 
+							:src="`https://www.biqubao.com/cover/${history.novelId.split('/')[2].substr(0,2)}/${history.novelId.split('/')[2]}/${history.novelId.split('/')[2]}s.jpg`"
+							 ></image>
 						</view>
 						<view class="read-history-detail">
 							<view class="">
@@ -38,6 +41,7 @@
 <script>
 	import uniSwipeAction from '@/components/uni-swipe-action/uni-swipe-action.vue'
 	import uniSwipeActionItem from '@/components/uni-swipe-action-item/uni-swipe-action-item.vue'
+	import{ mapMutations }from 'vuex'
 	export default {
 		components: {
 			uniSwipeAction,
@@ -52,6 +56,7 @@
 			this.historyList = uni.getStorageSync('historyList') || []
 		},
 		methods: {
+			...mapMutations(['SET_SOURCE']),
 			deleteHistory(index) {
 				uni.showModal({
 					title: '确定删除？',
@@ -64,6 +69,7 @@
 				})
 			},
 			containueRead(history) {
+				this.SET_SOURCE(history.source || '笔趣阁')
 				uni.navigateTo({
 					url: `/pages/detail/chapterDetail?novelId=${history.novelId}&chapterId=${history.chapterId}`
 				})
@@ -81,8 +87,9 @@
 
 			&-title {
 				font-size: 40rpx;
-				border-bottom: 2rpx dashed #eee;
+				border-bottom: 2rpx dashed #aaa;
 			}
+
 			.slide-delete {
 				width: 150rpx;
 				background: #f20000;
@@ -92,6 +99,7 @@
 				align-items: center;
 				color: #fff;
 			}
+
 			.read-history {
 				margin: 20rpx;
 				padding: 20rpx;

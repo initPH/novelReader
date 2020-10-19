@@ -10,12 +10,16 @@
 </template>
 
 <script>
+	import { mapState } from 'vuex'
 	import {
 		searchNovel
 	} from '@/api/index.js';
+	// 解析html用的
+	const cheerio = require('cheerio')
+
 	export default {
 		onLoad(option) {
-			let keyword = option.keyword
+			let keyword = option.keyword || '洪荒星辰道'
 			this.getSearchResult(keyword)
 		},
 		data() {
@@ -23,31 +27,41 @@
 				searchResult: []
 			}
 		},
+		computed: {
+			...mapState(['source'])
+		},
 		methods: {
 			toRead(novel) {
 				const novelId = novel.novelId
 				const novelName = novel.novelName
+
 				uni.navigateTo({
 					url: `/pages/detail/index?novelId=${novelId}&novelName=${novelName}`
 				})
 			},
 			getSearchResult(keyword) {
 				searchNovel({
-					searchkey: keyword
+					keyword,
+					source: this.source
 				}).then(res => {
-					// 替换掉换行
-					let cleanStr = res.replace(/[\r\n]/g, "")
-					let trPat = /<tr>.+?<\/tr>/g
-					// 每一行就是一条搜索出来的记录
-					let trList = cleanStr.match(trPat)
-					this.searchResult = trList.map(tr => {
-						let tdPat = /<td.+?<\/td>/g
-						let tdList = tr.match(tdPat)
-						return {
-							novelName: tdList[0].match(/<td.+?><a.+?>(.+?)<\/a>/)[1],
-							novelId: tdList[0].match(/href="\/(.+?)\/"/)[1],
-						}
-					})
+					let $ = cheerio.load(res, {
+						_useHtmlParser2: true
+					});
+					if (this.source == '笔趣阁') {
+						$('.grid tr td:nth-child(1) a').each((key, value) => {
+							this.searchResult.push({
+								novelName: value.children[0].data,
+								novelId: value.attribs.href
+							})
+						})
+					} else if(this.source == '笔趣宝') {
+						$('a.result-game-item-title-link').each((key, value) => {
+							this.searchResult.push({
+								novelName: value.attribs.title,
+								novelId: value.attribs.href
+							})
+						})
+					}
 				});
 			}
 		}
@@ -57,6 +71,7 @@
 <style lang="less">
 	.search-result {
 		padding: 0 20rpx 20rpx;
+
 		.record {
 			line-height: 50rpx;
 			margin-bottom: 20rpx;

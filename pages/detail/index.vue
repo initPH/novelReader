@@ -1,7 +1,7 @@
 <template>
 	<view class="chapters">
 		<view class="chapter" v-for="(chapter, index) in chapters" :key="index" @click="toRead(chapter.id)">
-			{{ chapter.name }}
+			{{ chapter.chapter }}
 		</view>
 	</view>
 </template>
@@ -10,6 +10,11 @@
 	import {
 		getChapter
 	} from '@/api/index.js'
+	import {
+		mapState
+	} from 'vuex'
+	// 解析html用的
+	const cheerio = require('cheerio')
 	export default {
 		onLoad(option) {
 			this.novelId = option.novelId
@@ -19,7 +24,6 @@
 					title: option.novelName
 				})
 			}
-
 		},
 		data() {
 			return {
@@ -27,20 +31,36 @@
 				chapters: []
 			}
 		},
+		computed: {
+			...mapState(['source'])
+		},
 		methods: {
 			getChapters() {
-				getChapter(this.novelId).then(res => {
-					let clearString = res.replace(/[\r\n]/g, "")
-					// 获取所有章节的div
-					let chapterList = clearString.match(/<div id="list".+?<\/div>/)[0]
-					// 获取单个div
-					let ddList = chapterList.match(/<dd.+?>(.+?)<\/dd>/g)
-					this.chapters = ddList.map(dd => {
-						return {
-							name: dd.match(/title="(.+?)">/)[1],
-							id: dd.match(/href="(.+?)"/)[1]
-						}
-					})
+				let data = {
+					novelId: this.novelId,
+					source: this.source
+				}
+				getChapter(data).then(res => {
+					let $ = cheerio.load(res, {
+						_useHtmlParser2: true
+					});
+					let temp = []
+					if (this.source == '笔趣阁') {
+						$('#list dl dd a').each((key, value) => {
+							temp.push({
+								chapter: value.attribs.title,
+								id: value.attribs.href
+							})
+						})
+					} else if (this.source == '笔趣宝') {
+						$('#list dl dd a').each((key, value) => {
+							temp.push({
+								chapter: value.children[0].data,
+								id: value.attribs.href
+							})
+						})
+					}
+					this.chapters = temp
 				})
 			},
 			toRead(chaperId) {

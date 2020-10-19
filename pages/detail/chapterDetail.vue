@@ -3,12 +3,12 @@
 		<!-- 点击显示菜单 -->
 		<view class="menu-area" @click="showMenu">
 		</view>
-		
+
 		<view v-if="content" class="chapter-content" :style="`fontSize: ${fontSize}rpx`" v-html="content">
 		</view>
 		<view class="chapter-bottom">
-			<view @click="preClick" v-if="!isFirstChapter">上一章</view>
-			<view @click="nextClick" v-if="!isLastChapter">下一章</view>
+			<view @click="preClick" v-if="preChapterId.indexOf('.html') != -1">上一章</view>
+			<view @click="nextClick" v-if="nextChapterId.indexOf('.html') != -1">下一章</view>
 		</view>
 		<uni-drawer @change="drawerChange" ref="catelogDrawer" mode="right" :width="250">
 			<scroll-view :style="`backgroundColor: ${bgColors[bgColorIndex].color};fontSize: ${fontSize}rpx`" scroll-y="" class="catelog-views">
@@ -62,6 +62,12 @@
 	import {
 		formatDate
 	} from '@/util.js'
+	import {
+		mapState
+	} from 'vuex'
+	// 解析html用的
+	const cheerio = require('cheerio')
+
 	export default {
 		components: {
 			uniDrawer,
@@ -79,8 +85,6 @@
 				preChapterId: "",
 				// 下一章id
 				nextChapterId: "",
-				// 是不是第一章  是的话就不显示上一章
-				isFirstChapter: true,
 				// 是否最后一章
 				isLastChapter: true,
 				// 目录
@@ -105,7 +109,9 @@
 				}]
 			}
 		},
-
+		computed: {
+			...mapState(['source'])
+		},
 		// 右上角目录被点击时
 		onNavigationBarButtonTap(button) {
 			// 如果当前是打开状态 就关闭
@@ -122,7 +128,7 @@
 			this.novelId = option.novelId
 			this.chapterId = option.chapterId
 			this.getChapterDetail()
-			
+
 			// 访问频率控制 刚刚才访问了内容  过两秒再请求
 			setTimeout(() => {
 				this.getCatelogList()
@@ -144,19 +150,32 @@
 				this.isDrawerOpen = isOpen
 			},
 			getCatelogList() {
+				let data = {
+					novelId: this.novelId,
+					source: this.source
+				}
 				// 拿目录
-				getChapter(this.novelId).then(res => {
-					let clearString = res.replace(/[\r\n]/g, "")
-					// 获取所有章节的div
-					let chapterList = clearString.match(/<div id="list".+?<\/div>/)[0]
-					// 获取单个div
-					let ddList = chapterList.match(/<dd.+?>(.+?)<\/dd>/g)
-					this.catelogList = ddList.map(dd => {
-						return {
-							name: dd.match(/title="(.+?)">/)[1],
-							id: dd.match(/href="(.+?)"/)[1]
-						}
-					})
+				getChapter(data).then(res => {
+					let $ = cheerio.load(res, {
+						_useHtmlParser2: true
+					});
+					let temp = []
+					if (this.source == '笔趣阁') {
+						$('#list dl dd a').each((key, value) => {
+							temp.push({
+								name: value.attribs.title,
+								id: value.attribs.href
+							})
+						})
+					} else if (this.source == '笔趣宝') {
+						$('#list dl dd a').each((key, value) => {
+							temp.push({
+								name: value.children[0].data,
+								id: value.attribs.href
+							})
+						})
+					}
+					this.catelogList = temp
 				})
 			},
 			catelogClick(category) {
@@ -173,47 +192,55 @@
 				this.getChapterDetail()
 			},
 			getChapterDetail() {
-				getChapterDetail(this.novelId, this.chapterId).then(res => {
-					// 获取到数据 停止下拉刷新
-					uni.stopPullDownRefresh()
-
-					// 去掉换行
+				let data = {
+					novelId: this.novelId,
+					chapterId: this.chapterId,
+					source: this.source
+				}
+				getChapterDetail(data).then(res => {
+					// // 去掉换行
 					let cleanStr = res.replace(/[\r\n]/g, "")
-					// 拿到content
-					let content = cleanStr.match('<div id="content".+?</div>')
-					this.content = content[0]
+					let booktitle = ""
+					let readtitle = ""
+					if (this.source == '笔趣阁') {
+						this.content = cleanStr.match('<div id="content".+?</div>')[0]
+						// 拿书名
+						booktitle = cleanStr.match(/var booktitle = "(.+?)";/)[1]
+						// 章节名字
+						readtitle = cleanStr.match(/var readtitle = "(.+?)";/)[1]
+						uni.setNavigationBarTitle({
+							title: readtitle
+						})
+						// 上一章
+						this.preChapterId = cleanStr.match(/var preview_page = "(.+?)";/)[1]
+						// 下一章
+						this.nextChapterId = cleanStr.match(/var next_page = "(.+?)";/)[1]
+					} else if (this.source == '笔趣宝') {
+						let title = cleanStr.match(/<title>(.+?)<\/title>/)[1]
+						// 第九章 祖龙孙女_洪荒星辰道_笔趣阁
+						// 小说名字
+						booktitle = title.split('_')[1]
+						//章节名字
+						readtitle = title.split('_')[0]
+						uni.setNavigationBarTitle({
+							title: readtitle
+						})
 
-					// 拿书名 
-					let booktitle = cleanStr.match(/var booktitle = "(.+?)";/)[1]
-					// 章节名字
-					let readtitle = cleanStr.match(/var readtitle = "(.+?)";/)[1]
-					uni.setNavigationBarTitle({
-						title: readtitle
-					})
-					// 保存阅读记录
+						this.content = cleanStr.match('<div id="content".+?</div>')[0]
+						// 上一章
+						this.preChapterId = cleanStr.match(/var prevpage="(.+?)"/)[1]
+						// 下一章
+						this.nextChapterId = cleanStr.match(/var nextpage="(.+?)"/)[1]
+					}
 					this.saveReadLog(booktitle, readtitle)
-
-
-					// 设置上一页 下一页
-					let bottom = cleanStr.match(/<div class="bottem".+?下一章<\/a>/)[0]
-					// 匹配到 下一页的url  章节id是 url最后一部分
-					let preUrl = bottom.match(/投推荐票.+?<a href="(.+?)".+?上一章<\/a>/)[1]
-					let nextUrl = bottom.match(/章节目录.+?<a href="(.+?)".+?下一章<\/a>/)[1]
-					if (preUrl) {
-						this.isFirstChapter = preUrl.indexOf('.html') == -1
-						this.preChapterId = preUrl.split('/').slice(-1)[0]
-					}
-					if (nextUrl) {
-						this.isLastChapter = nextUrl.indexOf('.html') == -1
-						this.nextChapterId = nextUrl.split('/').slice(-1)[0]
-					}
-
+					
 					// 滚动到顶部
 					uni.pageScrollTo({
 						scrollTop: 0,
 						duration: 0
 					})
 				}).catch(e => {
+					console.log(e)
 					uni.showToast({
 						title: '加载失败，请刷新',
 						icon: 'none'
@@ -223,29 +250,32 @@
 			saveReadLog(booktitle, readtitle) {
 				// 存下看过的小说id和章节
 				let historyList = uni.getStorageSync('historyList') || []
-				// historyList.findIndex((history) => history.novelId == this.novelId )
 				// 当前的小说记录存在本地了吗
 				let currentNovelInStorage = false
-				for (let history of historyList) {
+				for (let index in historyList) {
+					let history = historyList[index]
 					if (history.novelId == this.novelId) {
 						currentNovelInStorage = true
 						history.chapterId = this.chapterId
 						history.readtitle = readtitle
 						history.updateTime = formatDate(new Date().getTime())
+						history.source = this.source || '笔趣阁'
+						let first = historyList.splice(index, 1)[0]
+						historyList.unshift(first)
+						break
 					}
 				}
 				if (!currentNovelInStorage) {
-					historyList.push({
+					historyList.unshift({
 						novelId: this.novelId,
 						chapterId: this.chapterId,
 						booktitle,
 						readtitle,
-						updateTime: formatDate(new Date().getTime())
+						updateTime: formatDate(new Date().getTime()),
+						source: this.source || '笔趣阁'
 					})
 				}
-				uni.setStorageSync('historyList', historyList.sort(function(x, y) {
-					return new Date(y.updateTime).getTime() - new Date(x.updateTime).getTime()
-				}))
+				uni.setStorageSync('historyList', historyList)
 			}
 		}
 	}
@@ -259,9 +289,9 @@
 		.menu-area {
 			position: fixed;
 			width: 80%;
-			height: 80%;
+			height: 50%;
 			margin-left: 10%;
-			margin-top: 10%;
+			margin-top: 20%;
 			background: transparent;
 		}
 

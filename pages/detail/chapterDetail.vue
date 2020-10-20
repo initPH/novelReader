@@ -1,5 +1,5 @@
 <template>
-	<view :style="`backgroundColor: ${bgColors[bgColorIndex].color}`" class="chapter-detail">
+	<view :style="`backgroundColor: ${navigationColor}`" class="chapter-detail">
 		<!-- 点击显示菜单 -->
 
 		<view class="menu-area" @click="showMenu">
@@ -12,8 +12,11 @@
 			<view class="button-grow" @click="nextClick" v-if="nextChapterId.indexOf('.html') != -1">下一章</view>
 		</view>
 		<uni-drawer @change="drawerChange" ref="catelogDrawer" mode="right" :width="250">
-			<scroll-view :style="`backgroundColor: ${bgColors[bgColorIndex].color};fontSize: ${fontSize}rpx`" scroll-y="" class="catelog-views">
-				<view class="uni-title" v-for="(category, index) in catelogList" :key="index" @click="catelogClick(category)">{{ category.name }}</view>
+			<scroll-view refresher-enabled="true" :refresher-triggered="triggered" @refresherrefresh="getCatelogList"
+			 :scroll-into-view="`c${chapterId.replace('.html', '')}`" :style="`backgroundColor: ${ navigationColor };fontSize: ${fontSize}rpx`"
+			 scroll-y="" class="catelog-views">
+				<view :id="`c${category.id.replace('.html', '')}`" class="uni-title" v-for="(category, index) in catelogList" :key="index"
+				 @click="catelogClick(category)">{{ category.name }}</view>
 			</scroll-view>
 		</uni-drawer>
 		<uni-popup ref="popup" type="bottom">
@@ -40,8 +43,8 @@
 						背景颜色
 					</view>
 					<view class="bgcolor-buttons">
-						<view v-for="(bgcolor, index) in bgColors" class="bgcolor-demo bgcolor1" :class="{'active': bgColorIndex == index}"
-						 :style="`backgroundColor: ${bgcolor.color}`" @click="bgColorChange(index)" :key="index">
+						<view v-for="(bgcolor, index) in bgColors" class="bgcolor-demo bgcolor1" :class="{'active': navigationColor == bgcolor.color}"
+						 :style="`backgroundColor: ${bgcolor.color}`" @click="bgColorChange(bgcolor.color)" :key="index">
 							{{ bgcolor.name }}
 						</view>
 					</view>
@@ -96,6 +99,7 @@
 		},
 		data() {
 			return {
+				triggered: false,
 				readingState: 'notStart',
 				// 抽屉打开了吗
 				isDrawerOpen: false,
@@ -111,21 +115,21 @@
 				// 目录
 				catelogList: [],
 				fontSize: uni.getStorageSync('fontSize') || 40,
-				bgColorIndex: uni.getStorageSync('bgColorIndex') || 0,
+				navigationColor: uni.getStorageSync('navigationColor') || '#F7F7F7',
 				bgColors: [{
-					color: 'rgb(247,247,247)',
+					color: '#F7F7F7',
 					name: '磨砂白'
 				}, {
-					color: 'rgb(249,241,230)',
+					color: '#F9F1E6',
 					name: '麻布色'
 				}, {
-					color: 'rgb(208,229,212)',
+					color: '#D0E5D4',
 					name: '护眼绿'
 				}, {
-					color: 'rgb(255,227,226)',
+					color: '#FFE3E2',
 					name: '贵妃粉'
 				}, {
-					color: 'rgb(200,176,128)',
+					color: '#C8B080',
 					name: '羊皮纸'
 				}],
 				play: ""
@@ -150,26 +154,26 @@
 			this.novelId = option.novelId
 			this.chapterId = option.chapterId
 			this.getChapterDetail()
-
 			// 访问频率控制 刚刚才访问了内容  过两秒再请求
 			setTimeout(() => {
+				uni.setNavigationBarColor({
+					backgroundColor: this.navigationColor,
+					frontColor: "#000000"
+				})
+			}, 0)
+			// 1s后获取目录
+			setTimeout(() => {
 				this.getCatelogList()
-			}, 3000)
+			}, 1000)
 		},
 		methods: {
-			changeEnCode(str) {
-				let res = []
-				for (let i = 0; i < str.length; i++) {
-					// 这个不是正常的encodeUnicode 颠倒了大小端的位置
-					res[i] = ("00" + str.charCodeAt(i).toString(16)).slice(-2) + ("00" + str.charCodeAt(i).toString(16)).slice(-4, -2)
-				}
-				let strCode = "\\u" + res.join("\\u")
-				strCode = strCode.replace(/\\/g, "%")
-				return unescape(strCode)
-			},
-			bgColorChange(colorIndex) {
-				this.bgColorIndex = colorIndex
-				uni.setStorageSync('bgColorIndex', colorIndex)
+			bgColorChange(color) {
+				this.navigationColor = color
+				uni.setNavigationBarColor({
+					backgroundColor: color,
+					frontColor: "#000000"
+				})
+				uni.setStorageSync('navigationColor', color)
 			},
 			fontSizeChange(fontSize) {
 				this.fontSize = fontSize
@@ -182,12 +186,15 @@
 				this.isDrawerOpen = isOpen
 			},
 			getCatelogList() {
+				if (this.triggered) return
+				this.triggered = true
 				let data = {
 					novelId: this.novelId,
 					source: this.source
 				}
 				// 拿目录
 				getChapter(data).then(res => {
+					this.triggered = false
 					let $ = cheerio.load(res, {
 						_useHtmlParser2: true
 					});
@@ -208,6 +215,8 @@
 						})
 					}
 					this.catelogList = temp
+				}).catch(e => {
+					this.triggered = false
 				})
 			},
 			catelogClick(category) {
@@ -309,6 +318,16 @@
 				}
 				uni.setStorageSync('historyList', historyList)
 			},
+			// changeEnCode(str) {
+			// 	let res = []
+			// 	for (let i = 0; i < str.length; i++) {
+			// 		// 这个不是正常的encodeUnicode 颠倒了大小端的位置
+			// 		res[i] = ("00" + str.charCodeAt(i).toString(16)).slice(-2) + ("00" + str.charCodeAt(i).toString(16)).slice(-4, -2)
+			// 	}
+			// 	let strCode = "\\u" + res.join("\\u")
+			// 	strCode = strCode.replace(/\\/g, "%")
+			// 	return unescape(strCode)
+			// },
 			// 设置阅播放器
 			// startPlay() {
 			// 	let $ = cheerio.load(this.content, {

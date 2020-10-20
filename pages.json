@@ -23,8 +23,8 @@
 					"titleNView": {
 						"buttons": [{
 							"text": "倒序",
-							"fontSize": "30rpx",
-							"width": "80rpx"
+							"fontSize": "36rpx",
+							"width": "100rpx"
 						}]
 					}
 				}
@@ -38,8 +38,8 @@
 					"titleNView": {
 						"buttons": [{
 							"text": "目录",
-							"fontSize": "30rpx",
-							"width": "80rpx"
+							"fontSize": "36rpx",
+							"width": "100rpx"
 						}]
 					}
 				}

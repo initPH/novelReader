@@ -5,7 +5,10 @@
 			<view class="read-historys-title">
 				阅读历史
 			</view>
-			<uni-swipe-action>
+			<view class="" v-if="historyList.length  == 0">
+				暂无阅读历史
+			</view>
+			<uni-swipe-action v-else>
 				<uni-swipe-action-item v-for="(history, index) in historyList">
 					<template v-slot:right>
 						<view class="slide-delete" @click="deleteHistory(index)">删除</view>
@@ -18,13 +21,13 @@
 							<image v-else-if="history.source == '笔趣宝'" class="book-pic" :src="`https://www.biqubao.com/cover/${history.novelId.length == 3 ? 0 :history.novelId.substr(0,2)}/${history.novelId}/${history.novelId}s.jpg`"></image>
 						</view>
 						<view class="read-history-detail">
-							<view class="">
+							<view class="full-row">
 								{{ history.booktitle }}
 							</view>
-							<view class="">
+							<view class="full-row">
 								{{ history.readtitle }}
 							</view>
-							<view class="">
+							<view class="full-row">
 								{{ history.updateTime || '-' }}
 							</view>
 							<button @click="containueRead(history)" type="primary" class="continue-read">继续阅读</button>
@@ -123,6 +126,9 @@
 					flex-wrap: wrap;
 					// flex-grow: 0;
 					align-content: space-around;
+					.full-row {
+						width: 100%;
+					}
 				}
 
 				.continue-read {

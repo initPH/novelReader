@@ -39,7 +39,6 @@ export const getChapter = (data = {}) => {
 
 // 获取章节详情
 export const getChapterDetail = (data = {}) => {
-	console.log(data)
 	let postData = {}
 	let url = ""
 	if (data.source == '笔趣阁') {

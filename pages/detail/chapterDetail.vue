@@ -369,6 +369,7 @@
 	.chapter-detail {
 		padding: 0 20rpx 100rpx;
 		min-height: 100vh;
+		position: relative;
 
 		.menu-area {
 			position: fixed;
@@ -380,11 +381,15 @@
 		}
 
 		.chapter-content {
-			margin-bottom: 100rpx;
+			margin-bottom: 200rpx;
 		}
 
 		.chapter-bottom {
 			// padding: 20rpx;
+			position: absolute;
+			width: 100%;
+			bottom: 100rpx;
+			left: 0;
 			display: flex;
 			justify-content: space-between;
 			color: blue;
@@ -402,7 +407,6 @@
 
 		.bottom-setting-area {
 			background: #fff;
-			// height: 600rpx;
 			padding: 20rpx;
 			padding-bottom: 50rpx;
 

@@ -18,7 +18,16 @@
 		}, {
 			"path": "pages/detail/index",
 			"style": {
-				"navigationBarTitleText": "章节列表"
+				"navigationBarTitleText": "章节列表",
+				"app-plus": {
+					"titleNView": {
+						"buttons": [{
+							"text": "倒序",
+							"fontSize": "30rpx",
+							"width": "80rpx"
+						}]
+					}
+				}
 			}
 		}, {
 			"path": "pages/detail/chapterDetail",
@@ -29,8 +38,8 @@
 					"titleNView": {
 						"buttons": [{
 							"text": "目录",
-							"fontSize": "36rpx",
-							"width": "120rpx"
+							"fontSize": "30rpx",
+							"width": "80rpx"
 						}]
 					}
 				}

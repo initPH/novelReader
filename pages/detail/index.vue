@@ -34,6 +34,10 @@
 		computed: {
 			...mapState(['source'])
 		},
+		// 右上角目录被点击时
+		onNavigationBarButtonTap(button) {
+			this.chapters.reverse()
+		},
 		methods: {
 			getChapters() {
 				let data = {

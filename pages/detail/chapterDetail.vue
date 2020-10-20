@@ -8,8 +8,8 @@
 		<view v-if="content" class="chapter-content" :style="`fontSize: ${fontSize}rpx`" v-html="content">
 		</view>
 		<view class="chapter-bottom">
-			<view @click="preClick" v-if="preChapterId.indexOf('.html') != -1">上一章</view>
-			<view @click="nextClick" v-if="nextChapterId.indexOf('.html') != -1">下一章</view>
+			<view class="button-grow" @click="preClick" v-if="preChapterId.indexOf('.html') != -1">上一章</view>
+			<view class="button-grow" @click="nextClick" v-if="nextChapterId.indexOf('.html') != -1">下一章</view>
 		</view>
 		<uni-drawer @change="drawerChange" ref="catelogDrawer" mode="right" :width="250">
 			<scroll-view :style="`backgroundColor: ${bgColors[bgColorIndex].color};fontSize: ${fontSize}rpx`" scroll-y="" class="catelog-views">
@@ -384,10 +384,13 @@
 		}
 
 		.chapter-bottom {
-			padding: 20rpx;
+			// padding: 20rpx;
 			display: flex;
 			justify-content: space-between;
 			color: blue;
+			.button-grow {
+				padding: 30rpx;
+			}
 		}
 
 		.catelog-views {

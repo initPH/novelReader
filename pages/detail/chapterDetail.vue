@@ -265,14 +265,14 @@
 						this.nextChapterId = cleanStr.match(/var nextpage="(.+?)"/)[1]
 					}
 					this.saveReadLog(booktitle, readtitle)
-
+					uni.stopPullDownRefresh()
 					// 滚动到顶部
 					uni.pageScrollTo({
 						scrollTop: 0,
 						duration: 0
 					})
 				}).catch(e => {
-					console.log(e)
+					uni.stopPullDownRefresh()
 					uni.showToast({
 						title: '加载失败，请刷新',
 						icon: 'none'
@@ -388,6 +388,7 @@
 			display: flex;
 			justify-content: space-between;
 			color: blue;
+
 			.button-grow {
 				padding: 30rpx;
 			}

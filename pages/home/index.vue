@@ -18,7 +18,7 @@
 						<view class="read-history-pic">
 							<!-- {{ history }} -->
 							<image v-if="history.source == '笔趣阁'" class="book-pic" :src="`http://www.biquge.info/files/article/image/${history.novelId.split('_')[0]}/${history.novelId.split('_')[1]}/${history.novelId.split('_')[1]}s.jpg`"></image>
-							<image v-else-if="history.source == '笔趣宝'" class="book-pic" :src="`https://www.biqubao.com/cover/${history.novelId.length == 3 ? 0 :history.novelId.substr(0,2)}/${history.novelId}/${history.novelId}s.jpg`"></image>
+							<image v-else-if="history.source == '笔趣宝'" class="book-pic" :src="`https://www.biqubao.com/cover/${history.novelId.slice(0, history.novelId.length - 3)}/${history.novelId}/${history.novelId}s.jpg`"></image>
 						</view>
 						<view class="read-history-detail">
 							<view class="full-row">
@@ -56,23 +56,37 @@
 			}
 		},
 		onShow() {
-			this.historyList = uni.getStorageSync('historyList') || []
+			this.historyList =
+				uni.getStorageSync(
+					'historyList') || []
 		},
 		methods: {
-			...mapMutations(['SET_SOURCE']),
-			deleteHistory(index) {
+			...mapMutations(
+				['SET_SOURCE']),
+			deleteHistory(
+				index) {
 				uni.showModal({
 					title: '确定删除？',
-					success: (res) => {
+					success: (
+						res) => {
 						if (res.confirm) {
-							this.historyList.splice(index, 1)
-							uni.setStorageSync('historyList', this.historyList)
+							this.historyList
+								.splice(
+									index,
+									1)
+							uni.setStorageSync(
+								'historyList',
+								this.historyList
+							)
 						}
 					}
 				})
 			},
-			containueRead(history) {
-				this.SET_SOURCE(history.source || '笔趣阁')
+			containueRead(
+				history) {
+				this.SET_SOURCE(
+					history.source ||
+					'笔趣阁')
 				uni.navigateTo({
 					url: `/pages/detail/chapterDetail?novelId=${history.novelId}&chapterId=${history.chapterId}`
 				})
@@ -126,6 +140,7 @@
 					flex-wrap: wrap;
 					// flex-grow: 0;
 					align-content: space-around;
+
 					.full-row {
 						width: 100%;
 					}

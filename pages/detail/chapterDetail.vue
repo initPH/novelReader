@@ -12,7 +12,7 @@
 			<view class="button-grow" @click="nextClick" v-if="nextChapterId.indexOf('.html') != -1">下一章</view>
 		</view>
 		<uni-drawer @change="drawerChange" ref="catelogDrawer" mode="right" :width="250">
-			<scroll-view refresher-enabled="true" :refresher-triggered="triggered" @refresherrefresh="getCatelogList"
+			<scroll-view :refresher-background="navigationColor" refresher-enabled="true" :refresher-triggered="triggered" @refresherrefresh="getCatelogList"
 			 :scroll-into-view="`c${chapterId.replace('.html', '')}`" :style="`backgroundColor: ${ navigationColor };fontSize: ${fontSize}rpx`"
 			 scroll-y="" class="catelog-views">
 				<view :id="`c${category.id.replace('.html', '')}`" class="uni-title" v-for="(category, index) in catelogList" :key="index"

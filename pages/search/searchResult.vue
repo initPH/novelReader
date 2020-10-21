@@ -10,7 +10,9 @@
 </template>
 
 <script>
-	import { mapState } from 'vuex'
+	import {
+		mapState
+	} from 'vuex'
 	import {
 		searchNovel
 	} from '@/api/index.js';
@@ -19,16 +21,20 @@
 
 	export default {
 		onLoad(option) {
-			let keyword = option.keyword || '洪荒星辰道'
-			this.getSearchResult(keyword)
+			this.keyword = option.keyword || '斗破苍穹'
+			this.getSearchResult()
 		},
 		data() {
 			return {
+				keyword: "",
 				searchResult: []
 			}
 		},
 		computed: {
 			...mapState(['source'])
+		},
+		onPullDownRefresh() {
+			this.getSearchResult()
 		},
 		methods: {
 			toRead(novel) {
@@ -39,30 +45,37 @@
 					url: `/pages/detail/index?novelId=${novelId}&novelName=${novelName}`
 				})
 			},
-			getSearchResult(keyword) {
+			getSearchResult() {
 				searchNovel({
-					keyword,
+					keyword: this.keyword,
 					source: this.source
 				}).then(res => {
+					uni.stopPullDownRefresh()
+					
+					let storyTemp = []
+					
 					let $ = cheerio.load(res, {
 						_useHtmlParser2: true
 					});
 					if (this.source == '笔趣阁') {
 						$('.grid tr td:nth-child(1) a').each((key, value) => {
-							this.searchResult.push({
+							storyTemp.push({
 								novelName: value.children[0].data,
 								novelId: value.attribs.href.split('/')[1]
 							})
 						})
-					} else if(this.source == '笔趣宝') {
+					} else if (this.source == '笔趣宝') {
 						$('a.result-game-item-title-link').each((key, value) => {
-							this.searchResult.push({
+							storyTemp.push({
 								novelName: value.attribs.title,
 								novelId: value.attribs.href.split('/')[2]
 							})
 						})
 					}
-				});
+					this.searchResult = storyTemp
+				}).catch(e => {
+					uni.stopPullDownRefresh()
+				})
 			}
 		}
 	}

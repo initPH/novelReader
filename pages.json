@@ -13,12 +13,14 @@
 		}, {
 			"path": "pages/search/searchResult",
 			"style": {
-				"navigationBarTitleText": "搜索结果"
+				"navigationBarTitleText": "搜索结果",
+				"enablePullDownRefresh": true
 			}
 		}, {
 			"path": "pages/detail/index",
 			"style": {
 				"navigationBarTitleText": "章节列表",
+				"enablePullDownRefresh": true,
 				"app-plus": {
 					"titleNView": {
 						"buttons": [{

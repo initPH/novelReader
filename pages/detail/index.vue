@@ -25,6 +25,9 @@
 				})
 			}
 		},
+		onPullDownRefresh() {
+			this.getChapters()
+		},
 		data() {
 			return {
 				novelId: "",
@@ -45,6 +48,7 @@
 					source: this.source
 				}
 				getChapter(data).then(res => {
+					uni.stopPullDownRefresh()
 					let $ = cheerio.load(res, {
 						_useHtmlParser2: true
 					});
@@ -65,6 +69,8 @@
 						})
 					}
 					this.chapters = temp
+				}).catch(e => {
+					uni.stopPullDownRefresh()
 				})
 			},
 			toRead(chaperId) {

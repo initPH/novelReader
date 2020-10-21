@@ -8,7 +8,9 @@ const showLoading = () => {
 	loadCount++
 }
 const hideLoading = () => {
-	loadCount--
+	if (loadCount > 0) {
+		loadCount--
+	}
 	if (loadCount == 0) {
 		uni.hideLoading()
 	}
@@ -30,7 +32,6 @@ export default ({
 				resolve(res.data)
 			},
 			fail(e) {
-				console.log(e)
 				reject(e)
 			},
 			complete() {

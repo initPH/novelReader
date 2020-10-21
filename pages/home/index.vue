@@ -18,7 +18,7 @@
 						<view class="read-history-pic">
 							<!-- {{ history }} -->
 							<image v-if="history.source == '笔趣阁'" class="book-pic" :src="`http://www.biquge.info/files/article/image/${history.novelId.split('_')[0]}/${history.novelId.split('_')[1]}/${history.novelId.split('_')[1]}s.jpg`"></image>
-							<image v-else-if="history.source == '笔趣宝'" class="book-pic" :src="`https://www.biqubao.com/cover/${history.novelId.slice(0, history.novelId.length - 3)}/${history.novelId}/${history.novelId}s.jpg`"></image>
+							<image v-else-if="history.source == '笔趣宝'" class="book-pic" :src="`https://www.biqubao.com/cover/${history.novelId.slice(0, history.novelId.length - 3) || 0}/${history.novelId}/${history.novelId}s.jpg`"></image>
 						</view>
 						<view class="read-history-detail">
 							<view class="full-row">

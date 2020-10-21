@@ -151,6 +151,10 @@
 			this.getChapterDetail()
 		},
 		onLoad(option) {
+			
+			setInterval(() => {},)
+			
+			
 			this.novelId = option.novelId
 			this.chapterId = option.chapterId
 			this.getChapterDetail()
